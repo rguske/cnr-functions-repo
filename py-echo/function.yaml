@@ -1,0 +1,32 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: kn-py-echo
+  labels:
+    app: veba-ui
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      containers:
+        - image: us.gcr.io/daisy-284300/veba/kn-py-echo:1.1
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: veba-py-echo-trigger
+  labels:
+    app: veba-ui
+spec:
+  broker: rabbitmq-broker
+  filter:
+    attributes:
+      type: com.vmware.vsphere.VmPoweredOffEvent.v0
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: kn-py-echo
